@@ -22,3 +22,7 @@ django-phonenumber-field = "^8.0.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 119
+exclude = "migrations"
