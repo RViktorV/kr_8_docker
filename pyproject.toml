@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "kr-7-drf"
+version = "0.1.0"
+description = ""
+authors = ["RViktorV <rgavih@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+django = "4.2"
+djangorestframework = "^3.15.2"
+psycopg2-binary = "^2.9.9"
+python-dotenv = "^1.0.1"
+celery = "^5.4.0"
+redis = "^5.1.0"
+flake8 = "^7.1.1"
+pillow = "^10.4.0"
+black = "^24.8.0"
+django-phonenumber-field = "^8.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
