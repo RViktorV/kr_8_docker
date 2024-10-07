@@ -23,6 +23,7 @@ django-celery-beat = "^2.7.0"
 drf-yasg = "^1.21.7"
 setuptools = "^75.1.0"
 phonenumbers = "^8.13.47"
+django-countries = "^7.6.1"
 
 
 [build-system]

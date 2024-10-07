@@ -25,6 +25,9 @@ urlpatterns = [
         "users/", include("users.urls", namespace="users")
     ),  # Подключаем отдельные маршруты для пользователей
     path(
+        "habits/", include("habits.urls", namespace="habits")
+    ),  # Подключаем отдельные маршруты для пользователей
+    path(
         "swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"
     ),
     path(

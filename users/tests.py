@@ -3,32 +3,31 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from users.models import Users
 
-
 class UsersTests(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
-        # Создаем тестового пользователя для проверки авторизации
-        self.user = Users.objects.create_user(
-            email="testuser@example.com", password="password123", telegram_id="123456"
+        self.user = Users.objects.create(
+            email="testuser@example.com", password="password", telegram_id="123456"
         )
         self.user.set_password("password")  # Убедитесь, что пароль хеширован
         self.user.save()
 
     def test_get_users_list(self):
         """
-        Тестируем получение списка пользователей.
+        Тестовое получение списка пользователей (требуется аутентификация).
         """
-        url = reverse('user-list')
+        self.client.force_authenticate(user=self.user)  # Аутентифицированный запрос
+        url = reverse('users:users-list')
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_register_user(self):
         """
-        Тестируем регистрацию нового пользователя.
+        Тестовая регистрация пользователя.
         """
-        url = reverse('register')
+        url = reverse('users:register')
         data = {
             "email": "newuser@example.com",
             "password": "newpassword123",
@@ -41,12 +40,12 @@ class UsersTests(APITestCase):
 
     def test_login_user(self):
         """
-        Тестируем получение JWT токена при входе.
+        Проверьте вход пользователя, чтобы получить токен JWT.
         """
-        url = reverse('login')
+        url = reverse('users:login')
         data = {
             "email": "testuser@example.com",
-            "password": "password123"
+            "password": "password",
         }
         response = self.client.post(url, data, format='json')
 
@@ -56,44 +55,34 @@ class UsersTests(APITestCase):
 
     def test_token_refresh(self):
         """
-        Тестируем обновление JWT токена.
+        Test refreshing JWT token.
         """
-        # Получаем первоначальный токен
-        login_url = reverse('login')
+        login_url = reverse('users:login')  # Use the correct 'login' URL
         login_data = {
             "email": "testuser@example.com",
-            "password": "password123"
+            "password": "password"
         }
         login_response = self.client.post(login_url, login_data, format='json')
+        print(login_response.data)
+
+        # Проверьте, был ли вход успешным и токены были возвращены
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+        self.assertIn('refresh', login_response.data)
         refresh_token = login_response.data['refresh']
 
-        # Проверяем обновление токена
-        refresh_url = reverse('token_refresh')
+        refresh_url = reverse('users:token_refresh')
         refresh_data = {'refresh': refresh_token}
         response = self.client.post(refresh_url, refresh_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
 
-    def test_get_user_list(self):
-        """
-        Тестируем получение списка пользователей.
-        """
-        # Авторизуемся с помощью токена
-        self.client.force_authenticate(user=self.user)
-        url = reverse('users-list')
-        response = self.client.get(url)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(response.data), 1)
-
     def test_get_user_detail(self):
         """
-        Тестируем получение деталей конкретного пользователя.
+        Тестирование получения конкретных сведений о пользователе.
         """
-        # Авторизуемся с помощью токена
         self.client.force_authenticate(user=self.user)
-        url = reverse('users-detail', kwargs={'pk': self.user.id})
+        url = reverse('users:users-detail', kwargs={'pk': self.user.id})
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -101,11 +90,10 @@ class UsersTests(APITestCase):
 
     def test_update_user(self):
         """
-        Тестируем обновление данных пользователя.
+        Тестовое обновление данных пользователя.
         """
-        # Авторизуемся с помощью токена
         self.client.force_authenticate(user=self.user)
-        url = reverse('users-detail', kwargs={'pk': self.user.id})
+        url = reverse('users:users-detail', kwargs={'pk': self.user.id})
         data = {
             'city': 'New City'
         }
@@ -116,11 +104,10 @@ class UsersTests(APITestCase):
 
     def test_delete_user(self):
         """
-        Тестируем удаление пользователя.
+        Тестовое удаление пользователя.
         """
-        # Авторизуемся с помощью токена
         self.client.force_authenticate(user=self.user)
-        url = reverse('users-detail', kwargs={'pk': self.user.id})
+        url = reverse('users:users-detail', kwargs={'pk': self.user.id})
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

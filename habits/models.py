@@ -3,16 +3,16 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from users.models import Users
 
-
+NULLABLE = {"blank": True, "null": True}
 class Habit(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE,related_name='habits')
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='habits')
     place = models.CharField(max_length=255)
     time = models.TimeField()
     action = models.CharField(max_length=255)
     is_pleasant = models.BooleanField(default=False)
     linked_habit = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, limit_choices_to={'is_pleasant': True})
     periodicity = models.PositiveIntegerField(default=1)  # в днях
-    reward = models.CharField(max_length=255, null=True, blank=True)
+    reward = models.CharField(max_length=255, **NULLABLE)
     execution_time = models.PositiveIntegerField(help_text="Время в секундах")
     is_public = models.BooleanField(default=False)
 
