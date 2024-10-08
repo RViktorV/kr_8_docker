@@ -1,7 +1,8 @@
+from requests import Response
 from rest_framework import generics, viewsets
 from .models import Habit
 from .serializers import HabitSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from .tasks import send_telegram_message
 
@@ -49,3 +50,9 @@ class ReminderViewSet(viewsets.ViewSet):
         chat_id = request.user.profile.telegram_chat_id  # предполагается, что есть поле в профиле
         send_telegram_message.delay(habit_id, chat_id)
         return Response({'status': 'Напоминание отправлено!'})
+
+
+    class PublicHabitListView(generics.ListAPIView):
+        queryset = Habit.objects.filter(is_public=True)
+        serializer_class = HabitSerializer
+        permission_classes = [AllowAny]

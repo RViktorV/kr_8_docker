@@ -26,6 +26,7 @@ phonenumbers = "^8.13.47"
 django-countries = "^7.6.1"
 python-telegram-bot = "^21.6"
 coverage = "^7.6.1"
+django-cors-headers = "^4.4.0"
 
 
 
