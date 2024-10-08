@@ -1,7 +1,13 @@
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from .models import Habit
 from .serializers import HabitSerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
+from .tasks import send_telegram_message
+
+
+class HabitPagination(PageNumberPagination):
+    page_size = 5
 
 class HabitListCreateView(generics.ListCreateAPIView):
     """
@@ -31,3 +37,15 @@ class HabitDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         # Ограничиваем доступ к привычкам, принадлежащим текущему пользователю
         return Habit.objects.filter(user=self.request.user)
+
+
+# Задача для отправки напоминаний в Telegram
+class ReminderViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def send_reminder(self, request, habit_id):
+        habit = Habit.objects.get(id=habit_id, user=request.user)
+        # Здесь можно передать нужный чат-ид пользователя в Telegram
+        chat_id = request.user.profile.telegram_chat_id  # предполагается, что есть поле в профиле
+        send_telegram_message.delay(habit_id, chat_id)
+        return Response({'status': 'Напоминание отправлено!'})

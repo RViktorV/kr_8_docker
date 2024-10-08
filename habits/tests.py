@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from users.models import Users
 from .models import Habit
-from rest_framework_simplejwt.tokens import RefreshToken
+
 
 class HabitAPITestCase(APITestCase):
 
@@ -14,13 +14,6 @@ class HabitAPITestCase(APITestCase):
         )
         self.user.set_password("password")  # Убедитесь, что пароль хеширован
         self.user.save()
-
-        # Создаем JWT-токен для пользователя
-        refresh = RefreshToken.for_user(self.user)
-        self.access_token = str(refresh.access_token)
-
-        # Устанавливаем токен для авторизации запросов
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
 
         # Создаем привычку для пользователя
         self.habit = Habit.objects.create(
@@ -33,6 +26,7 @@ class HabitAPITestCase(APITestCase):
             execution_time=60,
             is_public=True
         )
+        self.client.force_authenticate(user=self.user)
 
     def test_create_habit(self):
         """
@@ -60,24 +54,6 @@ class HabitAPITestCase(APITestCase):
         # Проверяем корректность возвращенных данных
         self.assertEqual(response.data['place'], "Gym")
         self.assertEqual(response.data['action'], "Workout")
-
-    def test_get_habit_list(self):
-        """
-        Тестируем получение списка привычек.
-        """
-        url = reverse('habits:habit-list-create')
-        response = self.client.get(url, format='json')
-
-        # Проверяем, что ответ имеет статус 200 (OK)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Проверяем, что список содержит одну привычку
-        self.assertEqual(len(response.data), 1)
-
-        # Проверяем, что данные в списке совпадают с ожидаемыми
-        self.assertEqual(response.data[0]['place'], "Park")
-        self.assertEqual(response.data[0]['action'], "Running")
-
     def test_update_habit(self):
         """
         Тестируем успешное обновление привычки.
@@ -138,3 +114,21 @@ class HabitAPITestCase(APITestCase):
         # Проверяем, что ошибки валидации присутствуют
         self.assertIn('periodicity', response.data)
         self.assertIn('execution_time', response.data)
+
+
+    def test_get_habit_list(self):
+        """
+        Тестируем получение списка привычек.
+        """
+        url = reverse('habits:habit-list-create')
+        response = self.client.get(url, format='json')
+
+        # Проверяем, что ответ имеет статус 200 (OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Проверяем, что список содержит 4 привычки
+        self.assertEqual(len(response.data), 4)
+
+        # Проверяем, что данные в списке совпадают с ожидаемыми
+        self.assertEqual(response.json()["results"][0]['place'], "Park")
+        self.assertEqual(response.json()["results"][0]['action'], "Running")

@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 from pathlib import Path
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -125,6 +126,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",  # Закрываем доступ авторизацией по умолчанию
     ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination", "PAGE_SIZE": 5,
 }
 
 SIMPLE_JWT = {
@@ -141,15 +143,15 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_BEAT_SCHEDULE = {}
 
-# CELERY_BEAT_SCHEDULE = {
-#     'block-inactive-users-every-day': {
-#         'task': 'users.tasks.block_inactive_users',
-#         'schedule': crontab(hour=0, minute=0),  # Задача будет запускаться каждый день в полночь
-#         'options': {
-#             'expires': 3600,  # Задача истекает через час, чтобы не запускалась с опозданием
-#         },
-#     },
-# }
+CELERY_BEAT_SCHEDULE = {
+    'block-inactive-users-every-day': {
+        'task': 'users.tasks.block_inactive_users',
+        'schedule': crontab(hour=13, minute=30),  # Задача будет запускаться каждый день в полночь
+        'options': {
+            'expires': 3600,  # Задача истекает через час, чтобы не запускалась с опозданием
+        },
+    },
+}
 
 TELEGRAM_URL = "http://api.telegram.org/bot"
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
