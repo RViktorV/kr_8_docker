@@ -52,7 +52,8 @@ class ReminderViewSet(viewsets.ViewSet):
         return Response({'status': 'Напоминание отправлено!'})
 
 
-    class PublicHabitListView(generics.ListAPIView):
-        queryset = Habit.objects.filter(is_public=True)
-        serializer_class = HabitSerializer
-        permission_classes = [AllowAny]
+class PublicHabitListView(generics.ListAPIView):
+    queryset = Habit.objects.filter(is_public=True)
+    serializer_class = HabitSerializer
+    permission_classes = [AllowAny]
+    pagination_class = HabitPagination
